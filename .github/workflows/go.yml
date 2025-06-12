@@ -1,0 +1,34 @@
+name: Go Cross Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows]
+        goarch: [amd64]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build for ${{ matrix.goos }}-${{ matrix.goarch }}
+      run: |
+        mkdir -p build
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o build/app-${{ matrix.goos }}-${{ matrix.goarch }} ./...
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: build/app-${{ matrix.goos }}-${{ matrix.goarch }}
